@@ -13,30 +13,45 @@ import GuidanceScheduleHistory from "./pages/GuidanceScheduleHistory";
 import PastoralActivities from "./pages/PastoralActivities";
 import SacramentDocuments from "./pages/SacramentDocuments";
 import NotFound from "./pages/NotFound";
+import { AuthProvider } from "./contexts/AuthContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/guidance" element={<Guidance />} />
-          <Route path="/guidance/activity-schedule" element={<GuidanceActivitySchedule />} />
-          <Route path="/guidance/schedule-history" element={<GuidanceScheduleHistory />} />
-          <Route path="/pastoral" element={<Pastoral />} />
-          <Route path="/pastoral/activities" element={<PastoralActivities />} />
-          <Route path="/pastoral/sacraments" element={<SacramentDocuments />} />
-          <Route path="/student-records" element={<StudentRecords />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/guidance" element={<Guidance />} />
+            <Route
+              path="/guidance/activity-schedule"
+              element={<GuidanceActivitySchedule />}
+            />
+            <Route
+              path="/guidance/schedule-history"
+              element={<GuidanceScheduleHistory />}
+            />
+            <Route path="/pastoral" element={<Pastoral />} />
+            <Route
+              path="/pastoral/activities"
+              element={<PastoralActivities />}
+            />
+            <Route
+              path="/pastoral/sacraments"
+              element={<SacramentDocuments />}
+            />
+            <Route path="/student-records" element={<StudentRecords />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </AuthProvider>
 );
 
 export default App;

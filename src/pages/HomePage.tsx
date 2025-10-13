@@ -1,21 +1,31 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shield, Users, GraduationCap, LogOut, BookHeart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { getUserRole, signOut, UserRole } from "@/lib/supabase";
 import { toast } from "sonner";
 import { AuthGuard } from "@/components/AuthGuard";
+import { useAuth } from "@/contexts/AuthContext";
+import { UserRole } from "@/types/enum";
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [userRole, setUserRole] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { signOut, getUserRole } = useAuth();
 
   useEffect(() => {
     const fetchUserRole = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         const role = await getUserRole(user.id);
         setUserRole(role);
@@ -27,40 +37,45 @@ const HomePage = () => {
   }, []);
 
   const handleSignOut = async () => {
-    await signOut();
-    toast.success("Signed out successfully");
-    navigate('/auth');
+    const { error, message } = await signOut();
+    if (error) {
+      toast.error(message || "Sign out failed");
+    } else {
+      toast.success(message || "Signed out successfully");
+      navigate("/auth");
+    }
   };
 
   const canAccess = (section: UserRole) => {
-    return userRole === section;
+    // grant access if the role matches the section or user is a superadmin
+    return userRole === section || userRole === "superadmin";
   };
 
   const sections = [
     {
-      id: 'guidance' as UserRole,
+      id: "guidance" as UserRole,
       title: "Guidance",
       description: "Manage guidance activities and schedules",
       icon: Shield,
       route: "/guidance",
-      gradient: "from-primary to-primary/80"
+      gradient: "from-primary to-primary/80",
     },
     {
-      id: 'pastoral' as UserRole,
+      id: "pastoral" as UserRole,
       title: "Pastoral",
       description: "Manage pastoral activities and sacraments",
       icon: Users,
       route: "/pastoral",
-      gradient: "from-secondary to-secondary/80"
+      gradient: "from-secondary to-secondary/80",
     },
     {
-      id: 'student_records' as UserRole,
+      id: "student_records" as UserRole,
       title: "Student Records",
       description: "Manage student information",
       icon: GraduationCap,
       route: "/student-records",
-      gradient: "from-accent to-accent/80"
-    }
+      gradient: "from-accent to-accent/80",
+    },
   ];
 
   if (loading) {
@@ -87,7 +102,9 @@ const HomePage = () => {
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                   Boscocare
                 </h1>
-                <p className="text-xs text-muted-foreground">Pastoral & Guidance System</p>
+                <p className="text-xs text-muted-foreground">
+                  Pastoral & Guidance System
+                </p>
               </div>
             </div>
             <Button variant="outline" onClick={handleSignOut}>
@@ -115,15 +132,19 @@ const HomePage = () => {
                   <Card
                     key={section.id}
                     className={`relative overflow-hidden transition-all duration-300 ${
-                      isAccessible 
-                        ? 'shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] cursor-pointer' 
-                        : 'opacity-50 cursor-not-allowed'
+                      isAccessible
+                        ? "shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] cursor-pointer"
+                        : "opacity-50 cursor-not-allowed"
                     }`}
                     onClick={() => isAccessible && navigate(section.route)}
                   >
-                    <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${section.gradient}`} />
+                    <div
+                      className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${section.gradient}`}
+                    />
                     <CardHeader className="pb-4">
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${section.gradient} flex items-center justify-center mb-3`}>
+                      <div
+                        className={`w-12 h-12 rounded-xl bg-gradient-to-br ${section.gradient} flex items-center justify-center mb-3`}
+                      >
                         <Icon className="w-6 h-6 text-primary-foreground" />
                       </div>
                       <CardTitle className="text-xl">{section.title}</CardTitle>

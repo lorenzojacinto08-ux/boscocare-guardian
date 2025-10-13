@@ -5,29 +5,37 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ArrowLeft, Plus, Pencil, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
-
-interface PastoralActivity {
-  id: string;
-  title: string;
-  description: string;
-  activity_date: string;
-  activity_type: string;
-  participants_count: number;
-}
+import { PastoralActivity } from "@/types/tables";
 
 const PastoralActivities = () => {
   const navigate = useNavigate();
   const [records, setRecords] = useState<PastoralActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<PastoralActivity | null>(null);
+  const [editingRecord, setEditingRecord] = useState<PastoralActivity | null>(
+    null
+  );
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -42,9 +50,9 @@ const PastoralActivities = () => {
 
   const fetchRecords = async () => {
     const { data, error } = await supabase
-      .from('pastoral_activities')
-      .select('*')
-      .order('activity_date', { ascending: false });
+      .from("pastoral_activities")
+      .select("*")
+      .order("activity_date", { ascending: false });
 
     if (error) {
       toast.error("Failed to fetch activities");
@@ -56,7 +64,9 @@ const PastoralActivities = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return;
 
     const dataToSubmit = {
@@ -66,9 +76,9 @@ const PastoralActivities = () => {
 
     if (editingRecord) {
       const { error } = await supabase
-        .from('pastoral_activities')
+        .from("pastoral_activities")
         .update(dataToSubmit)
-        .eq('id', editingRecord.id);
+        .eq("id", editingRecord.id);
 
       if (error) {
         toast.error("Failed to update activity");
@@ -79,7 +89,7 @@ const PastoralActivities = () => {
       }
     } else {
       const { error } = await supabase
-        .from('pastoral_activities')
+        .from("pastoral_activities")
         .insert({ ...dataToSubmit, created_by: user.id });
 
       if (error) {
@@ -96,9 +106,9 @@ const PastoralActivities = () => {
     if (!confirm("Are you sure you want to delete this activity?")) return;
 
     const { error } = await supabase
-      .from('pastoral_activities')
+      .from("pastoral_activities")
       .delete()
-      .eq('id', id);
+      .eq("id", id);
 
     if (error) {
       toast.error("Failed to delete activity");
@@ -137,7 +147,7 @@ const PastoralActivities = () => {
       <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
         <header className="border-b bg-card/50 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-4">
-            <Button variant="ghost" onClick={() => navigate('/pastoral')}>
+            <Button variant="ghost" onClick={() => navigate("/pastoral")}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Pastoral
             </Button>
@@ -159,9 +169,12 @@ const PastoralActivities = () => {
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
-                    <DialogTitle>{editingRecord ? "Edit" : "Add"} Pastoral Activity</DialogTitle>
+                    <DialogTitle>
+                      {editingRecord ? "Edit" : "Add"} Pastoral Activity
+                    </DialogTitle>
                     <DialogDescription>
-                      {editingRecord ? "Update" : "Create a new"} pastoral activity
+                      {editingRecord ? "Update" : "Create a new"} pastoral
+                      activity
                     </DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleSubmit} className="space-y-4">
@@ -170,7 +183,9 @@ const PastoralActivities = () => {
                       <Input
                         id="title"
                         value={formData.title}
-                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, title: e.target.value })
+                        }
                         required
                       />
                     </div>
@@ -179,28 +194,47 @@ const PastoralActivities = () => {
                       <Textarea
                         id="description"
                         value={formData.description}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            description: e.target.value,
+                          })
+                        }
                         rows={3}
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="activity_date">Activity Date & Time</Label>
+                        <Label htmlFor="activity_date">
+                          Activity Date & Time
+                        </Label>
                         <Input
                           id="activity_date"
                           type="datetime-local"
                           value={formData.activity_date}
-                          onChange={(e) => setFormData({ ...formData, activity_date: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              activity_date: e.target.value,
+                            })
+                          }
                           required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="participants_count">Participants Count</Label>
+                        <Label htmlFor="participants_count">
+                          Participants Count
+                        </Label>
                         <Input
                           id="participants_count"
                           type="number"
                           value={formData.participants_count}
-                          onChange={(e) => setFormData({ ...formData, participants_count: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              participants_count: e.target.value,
+                            })
+                          }
                         />
                       </div>
                     </div>
@@ -209,14 +243,23 @@ const PastoralActivities = () => {
                       <Input
                         id="activity_type"
                         value={formData.activity_type}
-                        onChange={(e) => setFormData({ ...formData, activity_type: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            activity_type: e.target.value,
+                          })
+                        }
                       />
                     </div>
                     <div className="flex gap-2">
                       <Button type="submit" className="flex-1">
                         {editingRecord ? "Update" : "Create"}
                       </Button>
-                      <Button type="button" variant="outline" onClick={handleCloseDialog}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleCloseDialog}
+                      >
                         Cancel
                       </Button>
                     </div>
@@ -245,16 +288,30 @@ const PastoralActivities = () => {
                   <TableBody>
                     {records.map((record) => (
                       <TableRow key={record.id}>
-                        <TableCell className="font-medium">{record.title}</TableCell>
-                        <TableCell>{format(new Date(record.activity_date), "PPp")}</TableCell>
+                        <TableCell className="font-medium">
+                          {record.title}
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(record.activity_date), "PPp")}
+                        </TableCell>
                         <TableCell>{record.activity_type || "-"}</TableCell>
-                        <TableCell>{record.participants_count || "-"}</TableCell>
+                        <TableCell>
+                          {record.participants_count || "-"}
+                        </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <Button size="icon" variant="outline" onClick={() => handleEdit(record)}>
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              onClick={() => handleEdit(record)}
+                            >
                               <Pencil className="w-4 h-4" />
                             </Button>
-                            <Button size="icon" variant="destructive" onClick={() => handleDelete(record.id)}>
+                            <Button
+                              size="icon"
+                              variant="destructive"
+                              onClick={() => handleDelete(record.id)}
+                            >
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>

@@ -3,26 +3,40 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { signUp, signIn, UserRole } from "@/lib/supabase";
 import { BookHeart, Shield, Users, GraduationCap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Auth = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<UserRole>("guidance");
+  // default to Student Records so student option is pre-selected
+  const [role, setRole] = useState<string>("student_records");
+  const { signUp, signIn } = useAuth();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate('/');
+        navigate("/");
       }
     });
   }, [navigate]);
@@ -35,14 +49,14 @@ const Auth = () => {
     }
 
     setLoading(true);
-    const { error } = await signUp(email, password, role);
+    const { error, message } = await signUp(email, password, role);
     setLoading(false);
 
     if (error) {
-      toast.error(error.message);
+      toast.error(message || error?.message || "Registration failed");
     } else {
-      toast.success("Account created successfully!");
-      navigate('/');
+      toast.success(message || "Account created successfully!");
+      navigate("/");
     }
   };
 
@@ -54,14 +68,14 @@ const Auth = () => {
     }
 
     setLoading(true);
-    const { error } = await signIn(email, password);
+    const { error, message } = await signIn(email, password);
     setLoading(false);
 
     if (error) {
-      toast.error(error.message);
+      toast.error(message || error?.message || "Login failed");
     } else {
-      toast.success("Welcome back!");
-      navigate('/');
+      toast.success(message || "Welcome back!");
+      navigate("/");
     }
   };
 
@@ -93,7 +107,9 @@ const Auth = () => {
                   <Input
                     id="signin-email"
                     type="email"
-                    placeholder="your.email@example.com"
+                    name="email"
+                    autoComplete="email"
+                    placeholder="Enter your registered email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -104,7 +120,9 @@ const Auth = () => {
                   <Input
                     id="signin-password"
                     type="password"
-                    placeholder="••••••••"
+                    name="password"
+                    autoComplete="current-password"
+                    placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -123,7 +141,9 @@ const Auth = () => {
                   <Input
                     id="signup-email"
                     type="email"
-                    placeholder="your.email@example.com"
+                    name="email"
+                    autoComplete="email"
+                    placeholder="Your school email (e.g. jane.doe@school.edu)"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -134,7 +154,9 @@ const Auth = () => {
                   <Input
                     id="signup-password"
                     type="password"
-                    placeholder="••••••••"
+                    name="password"
+                    autoComplete="new-password"
+                    placeholder="Create a strong password (min 8 chars)"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -142,7 +164,10 @@ const Auth = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="role">Role</Label>
-                  <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
+                  <Select
+                    value={role}
+                    onValueChange={(value) => setRole(value)}
+                  >
                     <SelectTrigger id="role">
                       <SelectValue />
                     </SelectTrigger>
@@ -162,7 +187,7 @@ const Auth = () => {
                       <SelectItem value="student_records">
                         <div className="flex items-center gap-2">
                           <GraduationCap className="w-4 h-4" />
-                          <span>Student Records</span>
+                          <span>Student</span>
                         </div>
                       </SelectItem>
                     </SelectContent>

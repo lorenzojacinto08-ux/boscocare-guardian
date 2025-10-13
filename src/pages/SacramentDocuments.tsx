@@ -5,29 +5,37 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ArrowLeft, Plus, Pencil, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
-
-interface SacramentDocument {
-  id: string;
-  student_name: string;
-  sacrament_type: string;
-  document_date: string;
-  document_number: string;
-  notes: string;
-}
+import { SacramentDocument } from "@/types/tables";
 
 const SacramentDocuments = () => {
   const navigate = useNavigate();
   const [records, setRecords] = useState<SacramentDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<SacramentDocument | null>(null);
+  const [editingRecord, setEditingRecord] = useState<SacramentDocument | null>(
+    null
+  );
   const [formData, setFormData] = useState({
     student_name: "",
     sacrament_type: "",
@@ -42,9 +50,9 @@ const SacramentDocuments = () => {
 
   const fetchRecords = async () => {
     const { data, error } = await supabase
-      .from('sacrament_documents')
-      .select('*')
-      .order('document_date', { ascending: false });
+      .from("sacrament_documents")
+      .select("*")
+      .order("document_date", { ascending: false });
 
     if (error) {
       toast.error("Failed to fetch sacrament documents");
@@ -56,14 +64,16 @@ const SacramentDocuments = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return;
 
     if (editingRecord) {
       const { error } = await supabase
-        .from('sacrament_documents')
+        .from("sacrament_documents")
         .update(formData)
-        .eq('id', editingRecord.id);
+        .eq("id", editingRecord.id);
 
       if (error) {
         toast.error("Failed to update document");
@@ -74,7 +84,7 @@ const SacramentDocuments = () => {
       }
     } else {
       const { error } = await supabase
-        .from('sacrament_documents')
+        .from("sacrament_documents")
         .insert({ ...formData, created_by: user.id });
 
       if (error) {
@@ -91,9 +101,9 @@ const SacramentDocuments = () => {
     if (!confirm("Are you sure you want to delete this document?")) return;
 
     const { error } = await supabase
-      .from('sacrament_documents')
+      .from("sacrament_documents")
       .delete()
-      .eq('id', id);
+      .eq("id", id);
 
     if (error) {
       toast.error("Failed to delete document");
@@ -106,7 +116,7 @@ const SacramentDocuments = () => {
   const handleEdit = (record: SacramentDocument) => {
     setEditingRecord(record);
     setFormData({
-      student_name: record.student_name,
+      student_name: record.student_id,
       sacrament_type: record.sacrament_type,
       document_date: record.document_date.slice(0, 16),
       document_number: record.document_number || "",
@@ -132,7 +142,7 @@ const SacramentDocuments = () => {
       <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
         <header className="border-b bg-card/50 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-4">
-            <Button variant="ghost" onClick={() => navigate('/pastoral')}>
+            <Button variant="ghost" onClick={() => navigate("/pastoral")}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Pastoral
             </Button>
@@ -154,9 +164,12 @@ const SacramentDocuments = () => {
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
-                    <DialogTitle>{editingRecord ? "Edit" : "Add"} Sacrament Document</DialogTitle>
+                    <DialogTitle>
+                      {editingRecord ? "Edit" : "Add"} Sacrament Document
+                    </DialogTitle>
                     <DialogDescription>
-                      {editingRecord ? "Update" : "Create a new"} sacrament document record
+                      {editingRecord ? "Update" : "Create a new"} sacrament
+                      document record
                     </DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleSubmit} className="space-y-4">
@@ -166,7 +179,12 @@ const SacramentDocuments = () => {
                         <Input
                           id="student_name"
                           value={formData.student_name}
-                          onChange={(e) => setFormData({ ...formData, student_name: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              student_name: e.target.value,
+                            })
+                          }
                           required
                         />
                       </div>
@@ -175,7 +193,12 @@ const SacramentDocuments = () => {
                         <Input
                           id="sacrament_type"
                           value={formData.sacrament_type}
-                          onChange={(e) => setFormData({ ...formData, sacrament_type: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              sacrament_type: e.target.value,
+                            })
+                          }
                           required
                         />
                       </div>
@@ -187,7 +210,12 @@ const SacramentDocuments = () => {
                           id="document_date"
                           type="datetime-local"
                           value={formData.document_date}
-                          onChange={(e) => setFormData({ ...formData, document_date: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              document_date: e.target.value,
+                            })
+                          }
                           required
                         />
                       </div>
@@ -196,7 +224,12 @@ const SacramentDocuments = () => {
                         <Input
                           id="document_number"
                           value={formData.document_number}
-                          onChange={(e) => setFormData({ ...formData, document_number: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              document_number: e.target.value,
+                            })
+                          }
                         />
                       </div>
                     </div>
@@ -205,7 +238,9 @@ const SacramentDocuments = () => {
                       <Textarea
                         id="notes"
                         value={formData.notes}
-                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, notes: e.target.value })
+                        }
                         rows={3}
                       />
                     </div>
@@ -213,7 +248,11 @@ const SacramentDocuments = () => {
                       <Button type="submit" className="flex-1">
                         {editingRecord ? "Update" : "Create"}
                       </Button>
-                      <Button type="button" variant="outline" onClick={handleCloseDialog}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleCloseDialog}
+                      >
                         Cancel
                       </Button>
                     </div>
@@ -242,16 +281,28 @@ const SacramentDocuments = () => {
                   <TableBody>
                     {records.map((record) => (
                       <TableRow key={record.id}>
-                        <TableCell className="font-medium">{record.student_name}</TableCell>
+                        <TableCell className="font-medium">
+                          {record.student_id}
+                        </TableCell>
                         <TableCell>{record.sacrament_type}</TableCell>
-                        <TableCell>{format(new Date(record.document_date), "PPp")}</TableCell>
+                        <TableCell>
+                          {format(new Date(record.document_date), "PPp")}
+                        </TableCell>
                         <TableCell>{record.document_number || "-"}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <Button size="icon" variant="outline" onClick={() => handleEdit(record)}>
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              onClick={() => handleEdit(record)}
+                            >
                               <Pencil className="w-4 h-4" />
                             </Button>
-                            <Button size="icon" variant="destructive" onClick={() => handleDelete(record.id)}>
+                            <Button
+                              size="icon"
+                              variant="destructive"
+                              onClick={() => handleDelete(record.id)}
+                            >
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
