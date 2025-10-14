@@ -158,31 +158,67 @@ export type Database = {
       student_records: {
         Row: {
           address: string | null
+          average_grade: number | null
           created_at: string | null
           created_by: string
+          current_status: string | null
+          date_of_birth: string | null
+          education_level: string
+          email_address: string | null
+          gender: string | null
           id: string
           name: string
+          parent_contact_number: string | null
+          parent_guardian_name: string | null
+          parent_relationship: string | null
+          phone_number: string | null
+          section_program: string | null
           student_id: string
+          subjects_courses: string | null
           updated_at: string | null
           year_level: string
         }
         Insert: {
           address?: string | null
+          average_grade?: number | null
           created_at?: string | null
           created_by: string
+          current_status?: string | null
+          date_of_birth?: string | null
+          education_level?: string
+          email_address?: string | null
+          gender?: string | null
           id?: string
           name: string
+          parent_contact_number?: string | null
+          parent_guardian_name?: string | null
+          parent_relationship?: string | null
+          phone_number?: string | null
+          section_program?: string | null
           student_id: string
+          subjects_courses?: string | null
           updated_at?: string | null
           year_level: string
         }
         Update: {
           address?: string | null
+          average_grade?: number | null
           created_at?: string | null
           created_by?: string
+          current_status?: string | null
+          date_of_birth?: string | null
+          education_level?: string
+          email_address?: string | null
+          gender?: string | null
           id?: string
           name?: string
+          parent_contact_number?: string | null
+          parent_guardian_name?: string | null
+          parent_relationship?: string | null
+          phone_number?: string | null
+          section_program?: string | null
           student_id?: string
+          subjects_courses?: string | null
           updated_at?: string | null
           year_level?: string
         }
