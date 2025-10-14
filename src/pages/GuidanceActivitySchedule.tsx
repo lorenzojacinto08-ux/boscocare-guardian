@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Plus, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -28,6 +28,9 @@ const GuidanceActivitySchedule = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<ActivitySchedule | null>(null);
+  const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
+  const [completingRecord, setCompletingRecord] = useState<ActivitySchedule | null>(null);
+  const [completionNotes, setCompletionNotes] = useState("");
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -130,6 +133,51 @@ const GuidanceActivitySchedule = () => {
       duration_minutes: "",
       location: "",
     });
+  };
+
+  const handleMarkAsDone = (record: ActivitySchedule) => {
+    setCompletingRecord(record);
+    setCompletionNotes("");
+    setCompletionDialogOpen(true);
+  };
+
+  const handleCompleteSchedule = async () => {
+    if (!completingRecord) return;
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Insert into schedule history
+    const { error: insertError } = await supabase
+      .from('guidance_schedule_history')
+      .insert({
+        title: completingRecord.title,
+        description: completingRecord.description,
+        completed_date: new Date().toISOString(),
+        notes: completionNotes,
+        created_by: user.id,
+      });
+
+    if (insertError) {
+      toast.error("Failed to mark as completed");
+      return;
+    }
+
+    // Delete from activity schedule
+    const { error: deleteError } = await supabase
+      .from('guidance_activity_schedule')
+      .delete()
+      .eq('id', completingRecord.id);
+
+    if (deleteError) {
+      toast.error("Failed to remove from schedule");
+    } else {
+      toast.success("Activity marked as completed and moved to history");
+      fetchRecords();
+      setCompletionDialogOpen(false);
+      setCompletingRecord(null);
+      setCompletionNotes("");
+    }
   };
 
   return (
@@ -251,6 +299,9 @@ const GuidanceActivitySchedule = () => {
                         <TableCell>{record.location || "-"}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
+                            <Button size="icon" variant="outline" onClick={() => handleMarkAsDone(record)} title="Mark as Done">
+                              <CheckCircle className="w-4 h-4" />
+                            </Button>
                             <Button size="icon" variant="outline" onClick={() => handleEdit(record)}>
                               <Pencil className="w-4 h-4" />
                             </Button>
@@ -267,6 +318,45 @@ const GuidanceActivitySchedule = () => {
             </CardContent>
           </Card>
         </main>
+
+        <Dialog open={completionDialogOpen} onOpenChange={setCompletionDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Mark Activity as Completed</DialogTitle>
+              <DialogDescription>
+                This will move the activity to the schedule history. You can add optional completion notes.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              {completingRecord && (
+                <div className="p-3 bg-muted rounded-md">
+                  <p className="font-medium">{completingRecord.title}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {format(new Date(completingRecord.scheduled_date), "PPp")}
+                  </p>
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="completion-notes">Completion Notes (Optional)</Label>
+                <Textarea
+                  id="completion-notes"
+                  value={completionNotes}
+                  onChange={(e) => setCompletionNotes(e.target.value)}
+                  placeholder="Add any notes about how the activity went..."
+                  rows={4}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleCompleteSchedule} className="flex-1">
+                  Confirm Completion
+                </Button>
+                <Button variant="outline" onClick={() => setCompletionDialogOpen(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AuthGuard>
   );
