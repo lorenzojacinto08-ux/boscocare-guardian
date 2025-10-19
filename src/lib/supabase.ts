@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export type UserRole = 'guidance' | 'pastoral' | 'student_records';
+export type UserRole = 'admin' | 'student';
 
 export const getUserRole = async (userId: string): Promise<UserRole | null> => {
   const { data, error } = await supabase

@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface ActivitySchedule {
   id: string;
@@ -24,6 +25,7 @@ interface ActivitySchedule {
 
 const GuidanceActivitySchedule = () => {
   const navigate = useNavigate();
+  const { isAdmin } = useUserRole();
   const [records, setRecords] = useState<ActivitySchedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -202,7 +204,7 @@ const GuidanceActivitySchedule = () => {
                 <DialogTrigger asChild>
                   <Button onClick={() => setEditingRecord(null)}>
                     <Plus className="w-4 h-4 mr-2" />
-                    Add Schedule
+                    {isAdmin ? "Add Schedule" : "Schedule Guidance"}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl">
@@ -299,15 +301,19 @@ const GuidanceActivitySchedule = () => {
                         <TableCell>{record.location || "-"}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <Button size="icon" variant="outline" onClick={() => handleMarkAsDone(record)} title="Mark as Done">
-                              <CheckCircle className="w-4 h-4" />
-                            </Button>
-                            <Button size="icon" variant="outline" onClick={() => handleEdit(record)}>
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                            <Button size="icon" variant="destructive" onClick={() => handleDelete(record.id)}>
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            {isAdmin && (
+                              <>
+                                <Button size="icon" variant="outline" onClick={() => handleMarkAsDone(record)} title="Mark as Done">
+                                  <CheckCircle className="w-4 h-4" />
+                                </Button>
+                                <Button size="icon" variant="outline" onClick={() => handleEdit(record)}>
+                                  <Pencil className="w-4 h-4" />
+                                </Button>
+                                <Button size="icon" variant="destructive" onClick={() => handleDelete(record.id)}>
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>

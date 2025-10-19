@@ -17,7 +17,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<UserRole>("guidance");
+  const [role, setRole] = useState<UserRole>("student");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -147,22 +147,16 @@ const Auth = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="guidance">
+                      <SelectItem value="admin">
                         <div className="flex items-center gap-2">
                           <Shield className="w-4 h-4" />
-                          <span>Guidance</span>
+                          <span>Admin</span>
                         </div>
                       </SelectItem>
-                      <SelectItem value="pastoral">
+                      <SelectItem value="student">
                         <div className="flex items-center gap-2">
                           <Users className="w-4 h-4" />
-                          <span>Pastoral</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="student_records">
-                        <div className="flex items-center gap-2">
-                          <GraduationCap className="w-4 h-4" />
-                          <span>Student Records</span>
+                          <span>Student</span>
                         </div>
                       </SelectItem>
                     </SelectContent>

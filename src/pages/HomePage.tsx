@@ -32,31 +32,24 @@ const HomePage = () => {
     navigate('/auth');
   };
 
-  const canAccess = (section: UserRole) => {
-    return userRole === section;
-  };
-
   const sections = [
     {
-      id: 'guidance' as UserRole,
       title: "Guidance",
-      description: "Manage guidance activities and schedules",
+      description: "View and schedule guidance activities",
       icon: Shield,
       route: "/guidance",
       gradient: "from-primary to-primary/80"
     },
     {
-      id: 'pastoral' as UserRole,
       title: "Pastoral",
-      description: "Manage pastoral activities and sacraments",
+      description: "View pastoral activities and sacraments",
       icon: Users,
       route: "/pastoral",
       gradient: "from-secondary to-secondary/80"
     },
     {
-      id: 'student_records' as UserRole,
       title: "Student Records",
-      description: "Manage student information",
+      description: "View student information",
       icon: GraduationCap,
       route: "/student-records",
       gradient: "from-accent to-accent/80"
@@ -107,19 +100,14 @@ const HomePage = () => {
             </div>
 
             <div className="grid md:grid-cols-3 gap-6">
-              {sections.map((section) => {
-                const isAccessible = canAccess(section.id);
+              {sections.map((section, index) => {
                 const Icon = section.icon;
 
                 return (
                   <Card
-                    key={section.id}
-                    className={`relative overflow-hidden transition-all duration-300 ${
-                      isAccessible 
-                        ? 'shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] cursor-pointer' 
-                        : 'opacity-50 cursor-not-allowed'
-                    }`}
-                    onClick={() => isAccessible && navigate(section.route)}
+                    key={index}
+                    className="relative overflow-hidden transition-all duration-300 shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] cursor-pointer"
+                    onClick={() => navigate(section.route)}
                   >
                     <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${section.gradient}`} />
                     <CardHeader className="pb-4">
@@ -130,15 +118,9 @@ const HomePage = () => {
                       <CardDescription>{section.description}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      {isAccessible ? (
-                        <Button className="w-full" variant="outline">
-                          Access {section.title}
-                        </Button>
-                      ) : (
-                        <div className="text-sm text-muted-foreground text-center py-2">
-                          Access Restricted
-                        </div>
-                      )}
+                      <Button className="w-full" variant="outline">
+                        Access {section.title}
+                      </Button>
                     </CardContent>
                   </Card>
                 );
