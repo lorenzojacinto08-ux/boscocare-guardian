@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface PastoralActivity {
   id: string;
@@ -24,6 +25,7 @@ interface PastoralActivity {
 
 const PastoralActivities = () => {
   const navigate = useNavigate();
+  const { isAdmin } = useUserRole();
   const [records, setRecords] = useState<PastoralActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -150,13 +152,14 @@ const PastoralActivities = () => {
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                 Pastoral Activities
               </CardTitle>
-              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button onClick={() => setEditingRecord(null)}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Activity
-                  </Button>
-                </DialogTrigger>
+              {isAdmin && (
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => setEditingRecord(null)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Activity
+                    </Button>
+                  </DialogTrigger>
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
                     <DialogTitle>{editingRecord ? "Edit" : "Add"} Pastoral Activity</DialogTitle>
@@ -223,6 +226,7 @@ const PastoralActivities = () => {
                   </form>
                 </DialogContent>
               </Dialog>
+              )}
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -239,7 +243,7 @@ const PastoralActivities = () => {
                       <TableHead>Activity Date</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Participants</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      {isAdmin && <TableHead className="text-right">Actions</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -249,16 +253,18 @@ const PastoralActivities = () => {
                         <TableCell>{format(new Date(record.activity_date), "PPp")}</TableCell>
                         <TableCell>{record.activity_type || "-"}</TableCell>
                         <TableCell>{record.participants_count || "-"}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button size="icon" variant="outline" onClick={() => handleEdit(record)}>
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                            <Button size="icon" variant="destructive" onClick={() => handleDelete(record.id)}>
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                        {isAdmin && (
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button size="icon" variant="outline" onClick={() => handleEdit(record)}>
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button size="icon" variant="destructive" onClick={() => handleDelete(record.id)}>
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))}
                   </TableBody>

@@ -13,6 +13,7 @@ import { ArrowLeft, Plus, Pencil, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface StudentRecord {
   id: string;
@@ -36,6 +37,7 @@ interface StudentRecord {
 
 const StudentRecords = () => {
   const navigate = useNavigate();
+  const { isAdmin } = useUserRole();
   const [records, setRecords] = useState<StudentRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -214,10 +216,12 @@ const StudentRecords = () => {
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                 Student Records
               </CardTitle>
-              <Button onClick={() => { setFormData({ ...formData, education_level: activeTab }); setDialogOpen(true); }}>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Student
-              </Button>
+              {isAdmin && (
+                <Button onClick={() => { setFormData({ ...formData, education_level: activeTab }); setDialogOpen(true); }}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Student
+                </Button>
+              )}
             </CardHeader>
             <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -245,7 +249,7 @@ const StudentRecords = () => {
                             <TableHead>Gender</TableHead>
                             <TableHead>Year Level</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                            {isAdmin && <TableHead className="text-right">Actions</TableHead>}
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -264,16 +268,18 @@ const StudentRecords = () => {
                                   {record.current_status}
                                 </span>
                               </TableCell>
-                              <TableCell className="text-right">
-                                <div className="flex justify-end gap-2">
-                                  <Button size="icon" variant="outline" onClick={() => handleEdit(record)}>
-                                    <Pencil className="w-4 h-4" />
-                                  </Button>
-                                  <Button size="icon" variant="destructive" onClick={() => handleDelete(record.id)}>
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
+                              {isAdmin && (
+                                <TableCell className="text-right">
+                                  <div className="flex justify-end gap-2">
+                                    <Button size="icon" variant="outline" onClick={() => handleEdit(record)}>
+                                      <Pencil className="w-4 h-4" />
+                                    </Button>
+                                    <Button size="icon" variant="destructive" onClick={() => handleDelete(record.id)}>
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              )}
                             </TableRow>
                           ))}
                         </TableBody>

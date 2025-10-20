@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface ScheduleHistory {
   id: string;
@@ -23,6 +24,7 @@ interface ScheduleHistory {
 
 const GuidanceScheduleHistory = () => {
   const navigate = useNavigate();
+  const { isAdmin } = useUserRole();
   const [records, setRecords] = useState<ScheduleHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -141,13 +143,14 @@ const GuidanceScheduleHistory = () => {
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                 Guidance Schedule History
               </CardTitle>
-              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button onClick={() => setEditingRecord(null)}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add History
-                  </Button>
-                </DialogTrigger>
+              {isAdmin && (
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => setEditingRecord(null)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add History
+                    </Button>
+                  </DialogTrigger>
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
                     <DialogTitle>{editingRecord ? "Edit" : "Add"} Schedule History</DialogTitle>
@@ -204,6 +207,7 @@ const GuidanceScheduleHistory = () => {
                   </form>
                 </DialogContent>
               </Dialog>
+              )}
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -219,7 +223,7 @@ const GuidanceScheduleHistory = () => {
                       <TableHead>Title</TableHead>
                       <TableHead>Completed Date</TableHead>
                       <TableHead>Notes</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      {isAdmin && <TableHead className="text-right">Actions</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -228,16 +232,18 @@ const GuidanceScheduleHistory = () => {
                         <TableCell className="font-medium">{record.title}</TableCell>
                         <TableCell>{format(new Date(record.completed_date), "PPp")}</TableCell>
                         <TableCell className="max-w-xs truncate">{record.notes || "-"}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button size="icon" variant="outline" onClick={() => handleEdit(record)}>
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                            <Button size="icon" variant="destructive" onClick={() => handleDelete(record.id)}>
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                        {isAdmin && (
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button size="icon" variant="outline" onClick={() => handleEdit(record)}>
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button size="icon" variant="destructive" onClick={() => handleDelete(record.id)}>
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))}
                   </TableBody>
